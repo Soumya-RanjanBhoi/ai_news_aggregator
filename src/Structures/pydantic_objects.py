@@ -17,14 +17,19 @@ class FilteredNewsResponse(BaseModel):
 class SummaryStructure(BaseModel):
     """ This  is used for summary generation. """
     summary: str = Field(...,description="3-4 line summary of the given markdown text")
+    is_breaking : bool = Field(...,description="Weather  the news is  a breaking news or not")
+    score: int = Field(...,ge=0,le=10,description="how important the news is")
 
 class FinalResultEntity(BaseModel):
     """ This is used to get final structured output"""
     category: str = Field(...,description="Category chosen by the user")
     preference : str = Field(...,description="Out of selected category which sport they prefer")
     url: HttpUrl = Field(...,description="url of the news")
+    title: str = Field(...,description="title of the news")
     source: str =Field(...,description="Source of the news")
     summary: str = Field(...,description="summary of the news that are after filteration")
+    is_breaking: bool =Field(...,description="either the news provided is a breaking news or not")
+    score: int =Field(...,description="how imporatant the news is")
 
 def merge_dicts(a: dict, b: dict) -> dict:
     """Merge two summary dicts together"""

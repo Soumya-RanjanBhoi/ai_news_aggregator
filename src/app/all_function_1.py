@@ -1,6 +1,7 @@
 import feedparser
 from dotenv import load_dotenv
 from langchain_mistralai import ChatMistralAI
+from langchain_groq import ChatGroq
 from langchain_core.prompts import PromptTemplate
 from firecrawl import Firecrawl
 import time
@@ -94,7 +95,7 @@ class workflow_1_function:
         start=time.time()
         config=state['config']
         
-        chat_model=ChatMistralAI(model="mistral-large-latest")
+        chat_model=ChatGroq(model="openai/gpt-oss-120b")
         FILTER_PROMPT = """
         You are a sports news curator. Your job is to select the TOP 4 (if possible) most attention-grabbing and engaging news titles from the list below.
 
@@ -142,7 +143,7 @@ class workflow_1_function:
         start=time.time()
         config=state['config']
         
-        chat_model=ChatMistralAI(model="mistral-large-latest")
+        chat_model=ChatGroq(model="openai/gpt-oss-120b")
         FILTER_PROMPT = """
         You are a sports news curator. Your job is to select the TOP 4 (if possible) most attention-grabbing and engaging news titles from the list below.
 
@@ -182,7 +183,7 @@ class workflow_1_function:
         start=time.time()
         config=state['config']
         
-        chat_model=ChatMistralAI(model="mistral-large-latest")
+        chat_model=ChatGroq(model="openai/gpt-oss-120b")
         FILTER_PROMPT = """
         You are a science news curator. Your job is to select the TOP 4 (if possible) most attention-grabbing and engaging news titles from the list below.
 
@@ -232,7 +233,7 @@ class workflow_1_function:
         start=time.time()
         config=state['config']
         
-        chat_model=ChatMistralAI(model="mistral-large-latest")
+        chat_model=ChatMistralAI(model="magistral-small-2509")
         FILTER_PROMPT = """
         You are a technology news curator. Your job is to select the TOP 4 (if possible) most attention-grabbing and engaging news titles from the list below.
 
@@ -282,7 +283,7 @@ class workflow_1_function:
     def filter_content_policy(self,state:GeneralState) :
         start=time.time()
         config=state['config']
-        model=ChatMistralAI(model="mistral-large-latest")
+        chat_model=ChatGroq(model="moonshotai/kimi-k2-instruct-0905")
         FILTER_PROMPT = """
         You are a policy and governance news curator. Your job is to select the TOP 4 (if possible) most attention-grabbing and engaging news titles from the list below.
 
@@ -326,7 +327,7 @@ class workflow_1_function:
         partial_variables={"format_instructions":parser.get_format_instructions()}
         )
 
-        chain = final_template | model | parser 
+        chain = final_template | chat_model | parser 
 
         result=self.invoke_with_retry(chain, {"news_data":config})
         end=time.time()
@@ -339,7 +340,9 @@ class workflow_1_function:
         summ= chain.invoke({"text":res.markdown})
         return {
             "source":source,
-            "summary":summ.summary
+            "summary":summ.summary,
+            "is_breaking":summ.is_breaking,
+            "score":summ.score
         }
 
     async def _scrape_and_summarize_one(self,item,chain,semaphore: asyncio.Semaphore,):
@@ -365,6 +368,8 @@ class workflow_1_function:
                 return item.title, {
                     "source": item.source,
                     "summary": summ.summary,
+                    "is_breaking":summ.is_breaking,
+                    "score":summ.score
                 }
 
             except Exception as e:
@@ -372,6 +377,8 @@ class workflow_1_function:
                 return item.title, {
                     "source": item.source,
                     "summary": "Summary unavailable",
+                    "is_breaking":None,
+                    "score":0
                 }
 
     async def _summarize_all(self,items, chain, max_concurrent: int = 2):
@@ -393,7 +400,7 @@ class workflow_1_function:
 
         summ_parser = PydanticOutputParser(pydantic_object=SummaryStructure)
 
-        chat_model = ChatMistralAI(model="mistral-small-latest")
+        chat_model = ChatMistralAI(model="devstral-2512")
 
         summ_prompt = PromptTemplate(
             template="""You are a precise summarization assistant.
@@ -405,6 +412,8 @@ class workflow_1_function:
             - Write a clear and concise summary in exactly 2-3 sentences
             - Do NOT include opinions, filler phrases, or repetition
             - No explanation, no markdown.
+            - You also have to judge wheather the news is a breaking news or not and if it is a brealing news you have to assign 
+            a score to it in between 0 to 10.
 
             Text:
             {text} \n\n
@@ -440,7 +449,10 @@ class workflow_1_function:
                 preference=choice,
                 url=item.url,
                 source=item.source,
-                summary=summ_data.get("summary", "Summary unavailable")
+                title=item.title,
+                summary=summ_data.get("summary", "Summary unavailable"),
+                is_breaking=summ_data.get("is_breaking",None),
+                score=summ_data.get("score",0)
             ))
 
         return {"final_output": FinalResult(details=details)}

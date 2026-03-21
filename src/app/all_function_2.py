@@ -11,6 +11,7 @@ from firecrawl import Firecrawl
 import os
 from langgraph.graph import StateGraph,START,END
 from dotenv import load_dotenv
+from langchain_groq import ChatGroq
 
 class Workflow2:
     def __init__(self):
@@ -30,7 +31,7 @@ class Workflow2:
     
 
     def re_summarize(self,details, text):
-        model = ChatMistralAI(model='mistral-medium-latest')
+        chat_model=ChatMistralAI(model="ministral-8b-2512")
         parser = PydanticOutputParser(pydantic_object=Re_Summarize)
         summ_prompt = PromptTemplate(
             template="""You are a precise summarization assistant.
@@ -51,15 +52,18 @@ class Workflow2:
             partial_variables={'format_instructions': parser.get_format_instructions()}
         )
 
-        chain = summ_prompt | model | parser 
+        chain = summ_prompt | chat_model | parser 
         sum_res = self.invoke_with_retry(chain, {"text": text})
         
         return FinalResultEntity(
             category=details.category,
             preference=details.preference,
             url=details.url,
+            title=details.title,
             source=details.source,
-            summary=sum_res.summary
+            summary=sum_res.summary,
+            is_breaking=details.is_breaking,
+            score=details.score
         )
     
     
