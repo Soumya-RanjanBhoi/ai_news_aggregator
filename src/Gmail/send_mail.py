@@ -109,7 +109,7 @@ def send_via_gmail(to_email: str, to_name: str,html_content: str, date_str: str)
         return False
 
 
-def generate_and_send(user: dict, articles: list,template_path: str = "newsletter_template.html"):
+def generate_and_send(user: dict, articles: list,template_path: str = "src/Gmail/newsletter_template.html"):
 
     print(f"\n📡 Generating newsletter for {user['name']}...")
 
@@ -129,7 +129,7 @@ def generate_and_send(user: dict, articles: list,template_path: str = "newslette
     return send_via_gmail(user["email"], user["name"],html, data["date"])
 
 
-def send_to_all_users(users: list, articles: list,send_method: str = "gmail"):
+def send_to_all_users(users: list, articles: list):
 
     print(f"\n📬 Sending newsletters to {len(users)} users...")
     results = {"sent": 0, "failed": 0, "skipped": 0}

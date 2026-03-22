@@ -49,7 +49,6 @@ def update_preferences(
 ):
     
     preferences.email = email
-
     user = crud.update_preferences(db, preferences)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")

@@ -22,11 +22,10 @@ class UserGet(UserBase):
 
 
 class UpdatePreferences(BaseModel):
-    email: EmailStr = Field(..., description="Email of the user to update")
-    preferences: Optional[List[Dict[str, Any]]] = Field(
-        default=None, description="Updated preferences list"
-    )
-
+    email: Optional[EmailStr] = None 
+    preferences: Annotated[
+        List[Dict[str, Any]], Field(default_factory=list, description="User Preferences")
+    ]
 
 class UserLookup(BaseModel):
     name: Optional[str] = Field(default=None, description="Name of the user")
