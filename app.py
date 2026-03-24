@@ -3,10 +3,19 @@ from sqlalchemy.orm import Session
 from src.database.database import engine, SessionLocal, get_db, Base
 from src.database import schema, models
 from src.database import crud
+from fastapi.middleware.cors import CORSMiddleware
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def modify_data(user_data):
     new_set=[]
@@ -18,6 +27,14 @@ def modify_data(user_data):
             new_set.append(rs)
     return new_set
 
+
+@app.get('/')
+def start():
+    return HTTPException(status_code=200,detail={"message": "Newsflow API is running successfully"})
+
+@app.get('/health')
+def health_check():
+    return HTTPException(status_code=200,detail={"message":"Service is running well"})
 
 @app.post("/create_user", response_model=schema.UserGet)
 def create_user(user: schema.UserCreate, db: Session = Depends(get_db)):
@@ -54,7 +71,3 @@ def update_preferences(
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("src.app.app:app", host="0.0.0.0", port=8000, reload=True) 

@@ -95,7 +95,7 @@ if __name__=="__main__":
 
     try:
         scheduler = BlockingScheduler()
-        scheduler.add_job(run_pipeline,trigger=IntervalTrigger(minutes=3),id="news_pipeline",name="News Aggregator Pipeline",replace_existing=True)
+        scheduler.add_job(run_pipeline,trigger=IntervalTrigger(days=3),id="news_pipeline",name="News Aggregator Pipeline",replace_existing=True)
 
         scheduler.add_listener(my_listener, EVENT_JOB_ADDED)
         scheduler.start()
