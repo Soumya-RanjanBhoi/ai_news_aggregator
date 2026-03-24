@@ -21,7 +21,7 @@ def get_engine():
     if not passw:
         raise EnvironmentError("Missing env var: supabase_pass")
     
-    url = f"postgresql://postgres:{passw}@db.engepyysrjkmhxkumyit.supabase.co:5432/postgres"
+    url = f"postgresql://postgres.engepyysrjkmhxkumyit:{passw}@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres"
     
     
     _engine = create_engine(

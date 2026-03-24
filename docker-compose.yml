@@ -9,7 +9,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://postgres:${supabase_pass}@db.engepyysrjkmhxkumyit.supabase.co:5432/postgres
+      - DATABASE_URL="postgresql://postgres.engepyysrjkmhxkumyit:{supabase_pass}@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres"
     networks:
       - app_network
     restart: on-failure
@@ -34,7 +34,7 @@ services:
       - app_network
     restart: on-failure
     environment:
-      - DATABASE_URL=postgresql://postgres:${supabase_pass}@db.engepyysrjkmhxkumyit.supabase.co:5432/postgres
+      - DATABASE_URL="postgresql://postgres.engepyysrjkmhxkumyit:{supabase_pass}@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres"
 
 networks:
   app_network:
