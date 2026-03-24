@@ -63,7 +63,7 @@ def run_pipeline():
     load_dotenv() 
 
     passw=os.environ.get("supabase_pass","")
-    conn = psycopg2.connect("postgresql://postgres:{}@db.engepyysrjkmhxkumyit.supabase.co:5432/postgres".format(passw))
+    conn = psycopg2.connect("postgresql://postgres.engepyysrjkmhxkumyit:{}@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres".format(passw))
     cursor = conn.cursor()
 
     print("connection setup")
@@ -91,11 +91,11 @@ def run_pipeline():
 
 
 if __name__=="__main__":
-    print("✅ Scheduler running. Press Ctrl+C to stop.")
+    print("✅ Scheduler running")
 
     try:
         scheduler = BlockingScheduler()
-        scheduler.add_job(run_pipeline,trigger=IntervalTrigger(days=3),id="news_pipeline",name="News Aggregator Pipeline",replace_existing=True)
+        scheduler.add_job(run_pipeline,trigger=IntervalTrigger(days=1),id="news_pipeline",name="News Aggregator Pipeline",replace_existing=True)
 
         scheduler.add_listener(my_listener, EVENT_JOB_ADDED)
         scheduler.start()
