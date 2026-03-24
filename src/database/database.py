@@ -5,20 +5,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-SUPABASE_URL = "postgresql://postgres:{}@db.engepyysrjkmhxkumyit.supabase.co:5432/postgres"
+Base = declarative_base()
 
-passw = os.environ.get("supabase_pass", "")
+def get_engine():
+    passw = os.environ.get("supabase_pass", "")
+    if not passw:
+        raise EnvironmentError("Missing env var: supabase_pass")
+    url = f"postgresql://postgres:{passw}@db.engepyysrjkmhxkumyit.supabase.co:5432/postgres"
+    return create_engine(url)
 
-if not passw:
-    raise EnvironmentError("Missing environment variable: 'supabase_pass'")
-
-try:
-    engine = create_engine(SUPABASE_URL.format(passw))
-    SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
-    Base = declarative_base()
-except Exception as e:
-    raise RuntimeError(f"Failed to initialise database: {e}") from e
-
+engine = get_engine()
+SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 def get_db():
     db = SessionLocal()
