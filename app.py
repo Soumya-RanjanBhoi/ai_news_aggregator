@@ -1,13 +1,25 @@
 from fastapi import FastAPI, HTTPException, Depends, Query
 from sqlalchemy.orm import Session
-from src.database.database import engine, SessionLocal, get_db, Base
+from src.database.database import get_engine, get_db, Base
 from src.database import schema, models
 from src.database import crud
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
-Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        engine = get_engine()
+        Base.metadata.create_all(bind=engine)
+        print("✓ Database tables initialized")
+    except Exception as e:
+        print(f"⚠ Warning: Could not initialize database tables at startup: {e}")
+        print("  Tables will be created on first database access")
+    yield
+    pass
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
