@@ -17,7 +17,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 
 COPY . .
-
+# COPY main EXPOSE 8501 for streamlit
 EXPOSE 8000
 EXPOSE 5432
 

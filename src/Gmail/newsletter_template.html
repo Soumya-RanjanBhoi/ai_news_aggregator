@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>NewsFlow Digest — {{ date }}</title>
+<!--[if mso]>
+<noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
+<![endif]-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: #f0ece4;
+    font-family: 'DM Sans', Georgia, sans-serif;
+    color: #1a1410;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .outer { background:#f0ece4; padding: 32px 16px; }
+  .wrapper { max-width: 620px; margin: 0 auto; }
+
+  /* ── Masthead ── */
+  .masthead {
+    background: #1a1410;
+    border-radius: 4px 4px 0 0;
+    padding: 40px 48px 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .masthead-rule {
+    height: 1px;
+    background: rgba(255,255,255,0.12);
+    margin-bottom: 24px;
+  }
+  .masthead-eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #c8a96e;
+    margin-bottom: 14px;
+  }
+  .masthead-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 42px;
+    font-weight: 700;
+    color: #f5f0e8;
+    line-height: 1.1;
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+  }
+  .masthead-title span { color: #c8a96e; font-style: italic; font-weight: 400; }
+  .masthead-meta {
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 1px;
+    margin-top: 16px;
+    text-transform: uppercase;
+  }
+  .masthead-greeting {
+    margin-top: 20px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.5);
+    font-weight: 300;
+    line-height: 1.6;
+  }
+  .masthead-greeting strong { color: #c8a96e; font-weight: 500; }
+
+  /* ── Topic nav bar ── */
+  .topicbar {
+    background: #c8a96e;
+    padding: 14px 24px;
+    text-align: center;
+  }
+  .topicbar a {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #1a1410;
+    text-decoration: none;
+    margin: 0 10px;
+  }
+
+  /* ── Main content area ── */
+  .content {
+    background: #faf8f4;
+    padding: 0 0 32px;
+  }
+
+  /* ── Category section ── */
+  .category-section { padding: 36px 48px 0; }
+  .category-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #1a1410;
+  }
+  .category-icon { font-size: 18px; margin-right: 10px; }
+  .category-name {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1410;
+    letter-spacing: -0.3px;
+  }
+  .category-count {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 500;
+    color: #8a7a6a;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ── Article card ── */
+  .article-card {
+    margin-bottom: 20px;
+    padding: 20px 22px;
+    background: #fff;
+    border-left: 3px solid #c8a96e;
+    border-radius: 0 4px 4px 0;
+  }
+  .article-card:last-child { margin-bottom: 0; }
+
+  .article-meta {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #c8a96e;
+    margin-bottom: 8px;
+  }
+  .article-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #1a1410;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    text-decoration: none;
+    display: block;
+  }
+  .article-title:hover { color: #c8a96e; }
+  .article-summary {
+    font-size: 13px;
+    color: #5a4e42;
+    line-height: 1.7;
+    font-weight: 300;
+    margin-bottom: 12px;
+  }
+  .read-more {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #1a1410;
+    text-decoration: none;
+    border-bottom: 1.5px solid #c8a96e;
+    padding-bottom: 1px;
+  }
+
+  /* Breaking news card */
+  .article-card.breaking {
+    background: #1a1410;
+    border-left: 3px solid #e85c3a;
+  }
+  .article-card.breaking .article-meta { color: #e85c3a; }
+  .article-card.breaking .article-title { color: #f5f0e8; }
+  .article-card.breaking .article-summary { color: rgba(245,240,232,0.55); }
+  .article-card.breaking .read-more {
+    color: #f5f0e8;
+    border-color: #e85c3a;
+  }
+
+  /* ── Section divider ── */
+  .section-divider {
+    margin: 32px 48px 0;
+    height: 1px;
+    background: #e8e0d4;
+  }
+
+  /* ── Stats bar ── */
+  .stats-bar {
+    background: #1a1410;
+    margin: 32px 48px 0;
+    border-radius: 6px;
+    padding: 20px 28px;
+    display: table;
+    width: calc(100% - 96px);
+  }
+  .stat-item {
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .stat-num {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #c8a96e;
+    display: block;
+  }
+  .stat-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    display: block;
+    margin-top: 4px;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    background: #1a1410;
+    border-radius: 0 0 4px 4px;
+    padding: 32px 48px;
+    text-align: center;
+    margin-top: 0;
+  }
+  .footer-logo {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #c8a96e;
+    margin-bottom: 12px;
+    letter-spacing: -0.3px;
+  }
+  .footer-text {
+    font-size: 11px;
+    color: rgba(255,255,255,0.28);
+    line-height: 1.8;
+    margin-bottom: 16px;
+  }
+  .footer-links a {
+    font-size: 10px;
+    color: rgba(255,255,255,0.35);
+    text-decoration: none;
+    margin: 0 8px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .footer-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+    margin: 20px 0;
+  }
+</style>
+</head>
+<body>
+<div class="outer">
+<div class="wrapper">
+
+  <!-- ── Masthead ── -->
+  <div class="masthead">
+    <div class="masthead-rule"></div>
+    <div class="masthead-eyebrow">📡 Your personalised digest</div>
+    <div class="masthead-title">News<span>Flow</span></div>
+    <div class="masthead-meta">{{ date }} &nbsp;·&nbsp; Edition #{{ edition }}</div>
+    <div class="masthead-greeting">
+      Good {{ time_of_day }}, <strong>{{ user_name }}</strong> —
+      here are your top stories across
+      <strong>{{ total_topics }} topics</strong> from
+      <strong>{{ total_articles }} articles</strong> curated just for you.
+    </div>
+    <div class="masthead-rule" style="margin-top:24px;margin-bottom:0"></div>
+  </div>
+
+  <!-- ── Topic nav ── -->
+  <div class="topicbar">
+    {% for category in categories %}
+      <a href="#{{ category.id }}">{{ category.icon }} {{ category.name }}</a>
+    {% endfor %}
+  </div>
+
+  <!-- ── Content ── -->
+  <div class="content">
+
+    <!-- Stats bar -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-num">{{ total_articles }}</span>
+        <span class="stat-label">Articles</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">{{ total_sources }}</span>
+        <span class="stat-label">Sources</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">{{ total_topics }}</span>
+        <span class="stat-label">Topics</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">{{ breaking_count }}</span>
+        <span class="stat-label">Breaking</span>
+      </div>
+    </div>
+
+    <!-- ── Category sections ── -->
+    {% for category in categories %}
+    <div class="category-section" id="{{ category.id }}">
+      <div class="category-header">
+        <span class="category-icon">{{ category.icon }}</span>
+        <span class="category-name">{{ category.name }}</span>
+        <span class="category-count">{{ category.articles | length }} stories</span>
+      </div>
+
+      {% for article in category.articles %}
+      <div class="article-card {% if article.is_breaking %}breaking{% endif %}">
+        <div class="article-meta">
+          {% if article.is_breaking %}🔴 Breaking · {% endif %}
+          {{ article.source }} &nbsp;·&nbsp; {{ article.sub_category }}
+        </div>
+        <a href="{{ article.url }}" class="article-title">{{ article.title }}</a>
+        <p class="article-summary">{{ article.summary }}</p>
+        <a href="{{ article.url }}" class="read-more">Read full story →</a>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if not loop.last %}
+    <div class="section-divider"></div>
+    {% endif %}
+    {% endfor %}
+
+  </div>
+
+  <!-- ── Footer ── -->
+  <div class="footer">
+    <div class="footer-logo">📡 NewsFlow</div>
+    <div class="footer-text">
+      You're receiving this because you signed up for a personalised digest.<br>
+      Curated by AI · Delivered to <strong style="color:rgba(255,255,255,0.5)">{{ user_email }}</strong>
+    </div>
+    <div class="footer-divider"></div>
+    <div class="footer-links">
+      <a href="#">Manage preferences</a>
+      <a href="#">View in browser</a>
+      <a href="#">Unsubscribe</a>
+    </div>
+  </div>
+
+</div>
+</div>
+</body>
+</html>
