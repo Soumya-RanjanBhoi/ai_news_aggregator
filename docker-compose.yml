@@ -15,10 +15,9 @@ services:
     restart: on-failure
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 15s
+      interval: 75s
       timeout: 10s
       retries: 3
-      start_period: 40s
 
   scheduler:
     build:
@@ -36,8 +35,26 @@ services:
     environment:
       - DATABASE_URL="postgresql://postgres.engepyysrjkmhxkumyit:{supabase_pass}@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres"
 
+  frontend:
+    build: 
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: ai_news_frontend 
+    command: streamlit run main.py --server.port 8501 --server.address 0.0.0.0
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    depends_on:
+      - api
+    networks:
+      - app_network
+    restart: on-failure
+
 networks:
   app_network:
     driver: bridge 
     
+
+
     

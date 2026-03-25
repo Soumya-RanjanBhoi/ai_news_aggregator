@@ -95,9 +95,9 @@ if __name__=="__main__":
     run_pipeline() 
     try:
         scheduler = BlockingScheduler()
-        scheduler.add_job(run_pipeline,trigger=IntervalTrigger(days=7),id="news_pipeline",name="News Aggregator Pipeline",replace_existing=True,next_run_time=datetime.now())
+        scheduler.add_job(run_pipeline,trigger=IntervalTrigger(days=3),id="news_pipeline",name="News Aggregator Pipeline",replace_existing=True,next_run_time=datetime.now())
 
         scheduler.add_listener(my_listener, EVENT_JOB_ADDED)
         scheduler.start()
     except KeyboardInterrupt:
-        print("Scheduler stopped.")
+        print("Scheduler stopped.") 
