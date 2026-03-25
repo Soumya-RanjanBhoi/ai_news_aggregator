@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
     scheduler.add_job(
         run_pipeline,
-        trigger=IntervalTrigger(days=3),
+        trigger=IntervalTrigger(days=1),
         id="news_pipeline",
         name="News Aggregator Pipeline",
         replace_existing=True,
