@@ -6,7 +6,7 @@ class NewsItem(BaseModel):
     """Represents a single filtered news item returned by the agent."""
     title: str = Field(..., description="The attention-grabbing news headline")
     source: str = Field(..., description="The news source (e.g. bbci, espn, skysports)")
-    url: str = Field(..., description="The full URL to the article")
+    url: HttpUrl = Field(..., description="The full URL to the article")
 
 
 class FilteredNewsResponse(BaseModel):
@@ -28,8 +28,8 @@ class FinalResultEntity(BaseModel):
     title: str = Field(...,description="title of the news")
     source: str =Field(...,description="Source of the news")
     summary: str = Field(...,description="summary of the news that are after filteration")
-    is_breaking: bool =Field(...,description="either the news provided is a breaking news or not")
-    score: int =Field(...,description="how imporatant the news is")
+    is_breaking: bool =Field(default=False,description="either the news provided is a breaking news or not")
+    score: int =Field(default=5,description="how imporatant the news is")
 
 def merge_dicts(a: dict, b: dict) -> dict:
     """Merge two summary dicts together"""

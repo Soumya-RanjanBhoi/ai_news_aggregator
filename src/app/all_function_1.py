@@ -17,6 +17,7 @@ import asyncio
 import nest_asyncio  
 nest_asyncio.apply()
 from langgraph.graph import StateGraph,START,END
+from urllib.parse import urlparse
 
 
 
@@ -120,6 +121,8 @@ class workflow_1_function:
         - Avoid duplicates (same story from different sources = pick only one)
         - You MUST always include at least 1 India-focused story (cricket, hockey, or Indian athletes) if present in the list
         - You MUST always pick at least 1 story even if none seem particularly interesting — choose the most relevant one available
+        - IMPORTANT: The `url` field MUST be copied EXACTLY from the input.
+        - NEVER modify or rewrite the URL
         - No explanation, no markdown.
         {format_instructions}
         """
@@ -156,12 +159,14 @@ class workflow_1_function:
         ## Input News List:
     {news_data}
 
-    ## Instructions:
-    - Analyze ALL titles across ALL sources
-    - Pick exactly TOP 4 or less than 4 but not greater than four that will grab the most user attention
-    - Avoid duplicates (same story from different sources = pick only one)
-    - No explanation, no markdown.
-        {format_instructions}
+        ## Instructions:
+        - Analyze ALL titles across ALL sources
+        - Pick exactly TOP 4 or less than 4 but not greater than four that will grab the most user attention
+        - Avoid duplicates (same story from different sources = pick only one)
+        - IMPORTANT: The `url` field MUST be copied EXACTLY from the input.
+        - NEVER modify or rewrite the URL
+        - No explanation, no markdown.
+            {format_instructions}
         """
 
         parser=PydanticOutputParser(pydantic_object=FilteredNewsResponse)
@@ -208,6 +213,8 @@ class workflow_1_function:
         - Avoid duplicates (same story from different sources = pick only one)
         - You MUST always include at least 1 India-focused story (ISRO, Indian research, local environment) if present in the list
         - You MUST always pick at least 1 story even if none seem particularly interesting — choose the most relevant one available
+        - IMPORTANT: The `url` field MUST be copied EXACTLY from the input.
+        - NEVER modify or rewrite the URL
         - No explanation, no markdown.
         {format_instructions}
         """
@@ -260,6 +267,8 @@ class workflow_1_function:
         - Avoid duplicates (same story from different sources = pick only one)
         - You MUST always include at least 1 India-focused story (Indian startups, IT sector, govt tech policy) if present in the list
         - You MUST always pick at least 1 story even if none seem particularly interesting — choose the most relevant one available
+        - IMPORTANT: The `url` field MUST be copied EXACTLY from the input.
+        - NEVER modify or rewrite the URL
         - No explanation, no markdown.
         {format_instructions}
         """
@@ -280,56 +289,36 @@ class workflow_1_function:
         return {"filtered_cnt":result}
 
 
-    def filter_content_policy(self,state:GeneralState) :
+    def filter_content_policy(self,state:GeneralState):
         start=time.time()
         config=state['config']
-        chat_model=ChatGroq(model="moonshotai/kimi-k2-instruct-0905")
+        parser = PydanticOutputParser(pydantic_object=FilteredNewsResponse)
+        chat_model = ChatGroq(model="openai/gpt-oss-120b")
         FILTER_PROMPT = """
-        You are a policy and governance news curator. Your job is to select the TOP 4 (if possible) most attention-grabbing and engaging news titles from the list below.
+            You are a policy and governance news curator.
 
-        ## Selection Criteria (in order of priority):
-        1. **Controversy or Political Drama** - Scandals, resignations, no-confidence motions, diplomatic fallouts, protests, 
-            election controversies, impeachments, policy reversals
-        2. **Big Institution / Leader / Body Involvement** -
-            - India Policy: PMO, Parliament, Supreme Court, Election Commission, NITI Aayog, RBI, CBI, ED, 
-            key ministers (PM Modi, Home Minister, Finance Minister), state elections, landmark bills & amendments
-            - USA Policy: White House, Congress, Supreme Court, FBI, CIA, Federal Reserve, President, key senators,
-            executive orders, major legislation (budget, healthcare, immigration)
-            - International Policy Bodies: United Nations, WHO, WTO, IMF, World Bank, NATO, G20, G7, BRICS, 
-            ICC, ASEAN, EU Parliament, major treaties & sanctions
-        3. **Urgency or Breaking News** - Election results, emergency declarations, sudden policy reversals,
-            surprise appointments or resignations, war declarations, ceasefire announcements
-        4. **Cross-Border or Geopolitical Impact** - India-Pakistan, India-China, US-China, Russia-Ukraine, 
-            Middle East conflicts, trade wars, sanctions, border disputes, terrorism-related policy
-        5. **Citizen or Public Impact Hook** - Policies directly affecting common people — tax changes, 
-            reservation policies, subsidies, welfare schemes, visa rule changes, internet shutdowns
+            Select up to 4 most engaging news stories.
 
-        ## Input News List:
-        {news_data}
+            Input News:
+            {news_data}
 
-        ## Instructions:
-        - Analyze ALL titles across ALL sources
-        - Pick exactly TOP 4 that will grab the most user attention
-        - Cover a mix of policy categories if possible (e.g. not all 4 from India alone)
-        - Avoid duplicates (same story from different sources = pick only one)
-        - You MUST always include at least 1 India-focused story (Indian Parliament, Supreme Court, state politics) if present in the list
-        - You MUST always prioritize geopolitically sensitive or high-tension stories over routine policy updates
-        - You MUST always pick at least 1 story even if none seem particularly interesting — choose the most relevant one available
-        - No explanation, no markdown.
-        {format_instructions}
-        """
+            Rules:
+            - Pick up to 4 stories
+            - Avoid duplicates
+            - Copy URLs exactly
+            - Do not modify URLs
 
-        parser=PydanticOutputParser(pydantic_object=FilteredNewsResponse)
-
-        final_template=PromptTemplate(
-        template=FILTER_PROMPT,
-        input_variables=["news_data"],
-        partial_variables={"format_instructions":parser.get_format_instructions()}
+            {format_instructions}
+            """
+        final_template = PromptTemplate(
+            template=FILTER_PROMPT,
+            input_variables=["news_data"],
+            partial_variables={
+                "format_instructions": parser.get_format_instructions()
+            }
         )
-
-        chain = final_template | chat_model | parser 
-
-        result=self.invoke_with_retry(chain, {"news_data":config})
+        chain = final_template | chat_model | parser
+        result = self.invoke_with_retry(chain, {"news_data": config})
         end=time.time()
         print(f"extract_content_policy started at {start}, ended at {end}, lasted for {end-start}")
         return {"filtered_cnt":result}
@@ -357,7 +346,7 @@ class workflow_1_function:
                 loop = asyncio.get_event_loop()
                 res = await loop.run_in_executor(
                     None,                         
-                    lambda: self.app.scrape(item.url),
+                    lambda: self.app.scrape(str(item.url)),
                 )
 
                 summ = await loop.run_in_executor(
