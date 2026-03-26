@@ -1,5 +1,6 @@
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.interval import IntervalTrigger
+from apscheduler.events import EVENT_JOB_EXECUTED
 from dotenv import load_dotenv
 import psycopg2
 import os
@@ -8,9 +9,9 @@ import random
 from datetime import datetime, timedelta
 from src.app.all_function_2 import *
 from src.Gmail.send_mail import *
-from apscheduler.events import EVENT_JOB_ADDED
 
 last_call_time = 0
+
 
 def rate_limited_call(workflow, payload, min_interval=6):
     global last_call_time
@@ -27,7 +28,6 @@ def rate_limited_call(workflow, payload, min_interval=6):
     last_call_time = time.time()
 
     return result
-
 
 
 def safe_invoke(workflow, payload, max_retries=5):
@@ -50,10 +50,12 @@ def safe_invoke(workflow, payload, max_retries=5):
 
     raise Exception("❌ Max retries exceeded due to rate limits")
 
+
 def my_listener(event):
     job = scheduler.get_job(event.job_id)
     if job:
         print(f"⏰ Next run: {job.next_run_time}", flush=True)
+
 
 def modify_data(user_data):
     new_set = []
@@ -82,7 +84,6 @@ def convert_data(items):
     ]
 
 
-
 def excute_workflow(workflow, name, email, preferences):
     print(f"👤 Processing user: {email}", flush=True)
 
@@ -95,7 +96,7 @@ def excute_workflow(workflow, name, email, preferences):
 
             workflow_res = rate_limited_call(
                 workflow,
-                {"items": [item]}   
+                {"items": [item]}
             )
 
             for key in workflow_res['final_res']:
@@ -104,7 +105,7 @@ def excute_workflow(workflow, name, email, preferences):
                 )
                 all_res.append(final_re[0])
 
-            time.sleep(5)  
+            time.sleep(5)
 
         except Exception as e:
             print(f"❌ Error processing item {item}: {e}", flush=True)
@@ -137,7 +138,7 @@ def run_pipeline():
 
     passw = os.environ.get("supabase_pass", "")
 
-    print("connection setup")
+    print("🔌 Database connection setup", flush=True)
 
     obj = Workflow2()
     workflow = obj.build_final_workflow()
@@ -151,7 +152,7 @@ def run_pipeline():
         cursor.execute("SELECT * FROM users_database;")
         users_data = cursor.fetchall()
 
-        conn.close()  
+        conn.close()
 
         for data in users_data:
             _, name, email, preferences = data
@@ -166,13 +167,22 @@ def run_pipeline():
         conn.commit()
         conn.close()
 
+        print("✅ Pipeline completed", flush=True)
+
     except Exception as e:
-        print("❌ Error:", e)
+        print("❌ Error:", e, flush=True)
+
 
 if __name__ == "__main__":
     print("🔥 Scheduler starting...", flush=True)
 
-    scheduler = BlockingScheduler()
+    scheduler = BlockingScheduler(
+        job_defaults={
+            "max_instances": 1,
+            "coalesce": False,
+            "misfire_grace_time": 3600
+        }
+    )
 
     scheduler.add_job(
         run_pipeline,
@@ -182,7 +192,10 @@ if __name__ == "__main__":
         next_run_time=datetime.now() + timedelta(seconds=10)
     )
 
-    scheduler.add_listener(my_listener, EVENT_JOB_ADDED)
+    scheduler.add_listener(my_listener, EVENT_JOB_EXECUTED)
+
+    job = scheduler.get_job("news_pipeline")
+    print("⏰ First scheduled run:", job.next_run_time, flush=True)
 
     print("🚀 Scheduler running...", flush=True)
 
