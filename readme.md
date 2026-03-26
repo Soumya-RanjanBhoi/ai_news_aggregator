@@ -82,7 +82,7 @@ All services run in isolated Docker containers and can be deployed together on a
                          └──────────────┘
 ```
 
-**Deployment**: All three containers (Frontend, API, Scheduler) run on a single AWS EC2 instance using Docker Compose, making it cost-effective and easy to manage. See the [AWS EC2 Deployment](#️-aws-ec2-deployment) section for details.
+**Deployment**: All three containers (Frontend, API, Scheduler) run on a single AWS EC2 instance using Docker Compose, making it cost-effective and easy to manage. 
 
 ## 🚀 Quick Start
 
