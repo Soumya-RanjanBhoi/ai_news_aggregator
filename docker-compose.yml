@@ -22,7 +22,7 @@ services:
   scheduler:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.Scheduler
     container_name: ai_news_scheduler
     command: python -m scheduler.sch
     env_file: .env
