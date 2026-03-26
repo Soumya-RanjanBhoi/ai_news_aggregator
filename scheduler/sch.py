@@ -133,64 +133,41 @@ def excute_workflow(workflow, name, email, preferences):
 
 
 def run_pipeline():
-    print("🚀 Pipeline triggered", flush=True)
-
     load_dotenv()
 
     passw = os.environ.get("supabase_pass", "")
 
-    print("🔌 Connecting to DB...", flush=True)
-
-    conn = psycopg2.connect(
-        f"postgresql://postgres.engepyysrjkmhxkumyit:{passw}@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres"
-    )
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT last_run FROM scheduler_state ORDER BY id DESC LIMIT 1;")
-    last_run = cursor.fetchone()[0]
-
-    now = datetime.now()
-
-    if last_run and (now - last_run) < timedelta(days=3):
-        print("⏳ Skipping run (last run < 3 days ago)", flush=True)
-        return
-
-    print("🚀 Running pipeline...", flush=True)
+    print("connection setup")
 
     obj = Workflow2()
     workflow = obj.build_final_workflow()
 
     try:
+        conn = psycopg2.connect(
+            f"postgresql://postgres.engepyysrjkmhxkumyit:{passw}@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres"
+        )
+        cursor = conn.cursor()
+
         cursor.execute("SELECT * FROM users_database;")
         users_data = cursor.fetchall()
 
+        conn.close()  
+
         for data in users_data:
-            try:
-                _, name, email, preferences = data
+            _, name, email, preferences = data
+            excute_workflow(workflow, name, email=email, preferences=preferences)
 
-                excute_workflow(
-                    workflow,
-                    name,
-                    email=email,
-                    preferences=preferences
-                )
-
-                time.sleep(15)  
-
-            except Exception as e:
-                print(f"❌ Error for user {data}: {e}", flush=True)
-                continue
+        conn = psycopg2.connect(
+            f"postgresql://postgres.engepyysrjkmhxkumyit:{passw}@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres"
+        )
+        cursor = conn.cursor()
 
         cursor.execute("UPDATE scheduler_state SET last_run = NOW();")
         conn.commit()
-
-        print("✅ Pipeline completed successfully\n", flush=True)
+        conn.close()
 
     except Exception as e:
-        print("❌ Pipeline failed:", e, flush=True)
-        conn.rollback()
-
-
+        print("❌ Error:", e)
 
 if __name__ == "__main__":
     print("🔥 Scheduler starting...", flush=True)
